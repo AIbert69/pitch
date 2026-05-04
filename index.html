@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>STERIX · Deck</title>
+<style>
+  :root {
+    /* Tightened to near-achromatic. The logo's blue is the only color event. */
+    --bg: oklch(0.13 0.006 240);
+    --bg-deep: oklch(0.08 0.004 240);
+    --fg: oklch(0.97 0.004 240);
+    --muted: oklch(0.62 0.008 240);
+    --accent: oklch(0.97 0.004 240);
+    --ease-quart: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-quint: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
+  }
+
+  /* Vertical scroll container — fluid, no snap */
+  .deck {
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+  }
+
+  /* ---------- COVER ---------- */
+  .cover {
+    position: relative;
+    height: 100vh;
+    display: grid;
+    /* Anchor composition to the upper third for tension, not dead-center. */
+    grid-template-rows: 38vh 1fr;
+    overflow: hidden;
+    background:
+      /* Single asymmetric ambient light from upper-right, low chroma. */
+      radial-gradient(ellipse 70vmax 55vmax at 78% 18%, oklch(0.24 0.012 235) 0%, transparent 55%),
+      /* Inner vignette anchoring the eye. */
+      radial-gradient(ellipse at 50% 50%, transparent 30%, var(--bg-deep) 95%),
+      var(--bg);
+  }
+
+  /* Single very slow drift, suggesting a still room rather than animated marketing. */
+  .cover::before {
+    content: "";
+    position: absolute;
+    inset: -20vmax -10vmax auto auto;
+    width: 70vmax; height: 70vmax;
+    border-radius: 50%;
+    background: radial-gradient(circle, oklch(0.42 0.025 230) 0%, transparent 65%);
+    filter: blur(100px);
+    opacity: 0.35;
+    mix-blend-mode: screen;
+    pointer-events: none;
+    will-change: transform;
+    animation: drift 38s var(--ease-quint) infinite alternate;
+  }
+  @keyframes drift {
+    from { transform: translate3d(0, 0, 0) scale(1); }
+    to   { transform: translate3d(-6vmax, 4vmax, 0) scale(1.08); }
+  }
+
+  /* SVG film grain — adds tactility, breaks digital perfection. */
+  .cover::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.045;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.4 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+
+  /* Soft fade at the bottom, dissolving the cover into slide 1. */
+  .cover-fade {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 14vh;
+    pointer-events: none;
+    background: linear-gradient(180deg, transparent 0%, oklch(0 0 0) 100%);
+    z-index: 1;
+  }
+
+  .cover-inner {
+    position: relative;
+    z-index: 2;
+    grid-row: 2 / 3;
+    align-self: start;
+    justify-self: center;
+    text-align: center;
+    padding: 0 24px;
+    max-width: 640px;
+  }
+
+  .cover-eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.42em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 36px;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: rise 0.9s var(--ease-quart) 0.2s forwards;
+  }
+
+  .cover-logo {
+    display: block;
+    width: clamp(180px, 20vw, 280px);
+    height: auto;
+    margin: 0 auto;
+    /* Logo ships on white. Invert + reverse hue keeps the blue identity
+       readable against the dark cover. If a dark/transparent variant exists,
+       swap data-src and remove the filter. */
+    filter: invert(1) hue-rotate(180deg) brightness(1.04) contrast(1.04);
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+    animation: riseLogo 1.4s var(--ease-expo) 0.45s forwards;
+  }
+  @keyframes riseLogo {
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* Editorial hairline below the logo, draws in. Not a side-stripe; full hairline. */
+  .cover-rule {
+    display: block;
+    width: 0;
+    height: 1px;
+    margin: 36px auto 28px;
+    background: oklch(0.5 0.008 240);
+    opacity: 0;
+    animation: drawRule 1.2s var(--ease-quart) 0.95s forwards;
+  }
+  @keyframes drawRule {
+    to { opacity: 1; width: 56px; }
+  }
+
+  .cover-tagline {
+    font-size: clamp(13px, 1.15vw, 15px);
+    font-weight: 300;
+    letter-spacing: 0.01em;
+    color: var(--muted);
+    margin: 0 auto;
+    max-width: 30ch;
+    line-height: 1.55;
+    opacity: 0;
+    transform: translateY(12px);
+    animation: rise 1s var(--ease-quart) 1.05s forwards;
+  }
+
+  /* Confident cue: arrow only, no word. */
+  .cover-cue {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 14px;
+    height: 44px;
+    z-index: 3;
+    cursor: pointer;
+    opacity: 0;
+    animation: cueIn 0.9s var(--ease-quart) 1.6s forwards;
+  }
+  .cover-cue::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 50%;
+    width: 1px; height: 32px;
+    background: linear-gradient(180deg, transparent 0%, var(--muted) 100%);
+    transform: translateX(-50%);
+  }
+  .cover-cue::after {
+    content: "";
+    position: absolute;
+    bottom: 4px; left: 50%;
+    width: 6px; height: 6px;
+    border-right: 1px solid var(--muted);
+    border-bottom: 1px solid var(--muted);
+    transform: translateX(-50%) rotate(45deg);
+    transition: border-color 0.25s var(--ease-quart);
+  }
+  .cover-cue:hover::after,
+  .cover-cue:hover::before {
+    border-color: var(--fg);
+  }
+  .cover-cue:hover::before {
+    background: linear-gradient(180deg, transparent 0%, var(--fg) 100%);
+  }
+
+  @keyframes rise {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes cueIn {
+    0%   { opacity: 0; transform: translate(-50%, 8px); }
+    100% { opacity: 0.75; transform: translate(-50%, 0); }
+  }
+
+  /* Idle bob, slow and small — breathes, doesn't pulse. */
+  .cover-cue.in-rest {
+    animation: cueBob 3.2s var(--ease-quint) infinite;
+  }
+  @keyframes cueBob {
+    0%, 100% { transform: translate(-50%, 0); opacity: 0.75; }
+    50%      { transform: translate(-50%, 4px); opacity: 0.95; }
+  }
+
+  /* ---------- SLIDES ---------- */
+  .slide {
+    display: block;
+    margin: 0;
+    padding: 0;
+    background: #000;
+    line-height: 0;
+    /* fade-up entrance */
+    opacity: 0;
+    transform: translateY(40px);
+    transition:
+      opacity 0.9s var(--ease-quart),
+      transform 0.9s var(--ease-quart);
+    will-change: opacity, transform;
+  }
+  .slide.in {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .slide img {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 0;
+    user-select: none;
+    -webkit-user-drag: none;
+    image-rendering: -webkit-optimize-contrast;
+  }
+
+  /* HUD */
+  .hud {
+    position: fixed; left: 0; right: 0; bottom: 18px;
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    color: var(--muted); font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
+    opacity: 0; transition: opacity .25s ease;
+    pointer-events: none;
+    z-index: 15;
+  }
+  body.show-hud .hud { opacity: 1; pointer-events: auto; }
+  .hud .counter { font-variant-numeric: tabular-nums; }
+  .hud button {
+    background: rgba(255,255,255,.06); color: var(--fg);
+    border: 1px solid rgba(255,255,255,.12);
+    padding: 6px 10px; border-radius: 999px;
+    font: inherit; letter-spacing: inherit; text-transform: inherit;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+  }
+  .hud button:hover { background: rgba(255,255,255,.12); }
+
+  /* Vertical progress bar on the left */
+  .progress {
+    position: fixed; left: 0; top: 0; width: 2px; height: 0;
+    background: var(--accent); transition: height .25s var(--ease-quart);
+    z-index: 20;
+  }
+
+  /* Slide-dot rail on right */
+  .rail {
+    position: fixed; right: 14px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 8px;
+    z-index: 12;
+    opacity: .55; transition: opacity .25s ease;
+  }
+  .rail:hover { opacity: 1; }
+  .rail a {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: rgba(255,255,255,.22);
+    transition: background .25s var(--ease-quart), transform .35s var(--ease-quart);
+    cursor: pointer;
+  }
+  .rail a.active {
+    background: var(--accent);
+    transform: scale(1.5);
+  }
+
+  /* Help overlay */
+  .help {
+    position: fixed; inset: 0; background: rgba(0,0,0,.85);
+    display: none; place-items: center; z-index: 30; padding: 24px;
+  }
+  .help.open { display: grid; }
+  .help-card {
+    max-width: 420px; padding: 28px 32px; border-radius: 14px;
+    background: #111; border: 1px solid rgba(255,255,255,.08);
+  }
+  .help h2 { margin: 0 0 14px; font-size: 16px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .help kbd {
+    display: inline-block; min-width: 28px; padding: 3px 8px; margin-right: 8px;
+    background: #1d1d1d; border: 1px solid rgba(255,255,255,.12);
+    border-radius: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px;
+  }
+  .help p { margin: 6px 0; font-size: 14px; color: #cfcfcf; }
+
+  /* Hide rail on small screens */
+  @media (max-width: 640px) {
+    .rail { display: none; }
+  }
+
+  /* Respect reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .cover::before, .cover::after,
+    .cover-eyebrow, .cover-logo, .cover-rule, .cover-tagline,
+    .cover-cue, .cover-cue.in-rest {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+    .cover-rule { width: 56px !important; }
+    .cover-cue { opacity: 0.75 !important; transform: translateX(-50%) !important; }
+    .slide {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="progress" id="progress"></div>
+
+  <main class="deck" id="deck">
+    <section class="cover" id="cover" aria-label="Cover">
+      <div class="cover-inner">
+        <p class="cover-eyebrow">Investor Pitch &middot; 2026</p>
+        <img class="cover-logo" data-src="logo.webp" alt="STERIX, Medical Robotics" />
+        <hr class="cover-rule" aria-hidden="true" />
+        <p class="cover-tagline">The hospital operating system and robotics platform.</p>
+      </div>
+      <a class="cover-cue" id="coverCue" href="#s1" aria-label="Continue to deck"></a>
+      <div class="cover-fade" aria-hidden="true"></div>
+    </section>
+
+    <section class="slide" id="s1"><img data-src="1.webp"  alt="Slide 1"  /></section>
+    <section class="slide" id="s2"><img data-src="2.webp"  alt="Slide 2"  loading="lazy" /></section>
+    <section class="slide" id="s3"><img data-src="3.webp"  alt="Slide 3"  loading="lazy" /></section>
+    <section class="slide" id="s4"><img data-src="4.webp"  alt="Slide 4"  loading="lazy" /></section>
+    <section class="slide" id="s5"><img data-src="5.webp"  alt="Slide 5"  loading="lazy" /></section>
+    <section class="slide" id="s6"><img data-src="6.webp"  alt="Slide 6"  loading="lazy" /></section>
+    <section class="slide" id="s7"><img data-src="7.webp"  alt="Slide 7"  loading="lazy" /></section>
+    <section class="slide" id="s8"><img data-src="8.webp"  alt="Slide 8"  loading="lazy" /></section>
+    <section class="slide" id="s9"><img data-src="9.webp"  alt="Slide 9"  loading="lazy" /></section>
+    <section class="slide" id="s10"><img data-src="10.webp" alt="Slide 10" loading="lazy" /></section>
+    <section class="slide" id="s11"><img data-src="11.webp" alt="Slide 11" loading="lazy" /></section>
+    <section class="slide" id="s12"><img data-src="12.webp" alt="Slide 12" loading="lazy" /></section>
+    <section class="slide" id="s13"><img data-src="13.webp" alt="Slide 13" loading="lazy" /></section>
+  </main>
+
+  <nav class="rail" id="rail" aria-label="Slide navigation"></nav>
+
+  <div class="hud">
+    <button id="prevBtn" aria-label="Previous">↑ Prev</button>
+    <span class="counter"><span id="cur">1</span> / <span id="total">13</span></span>
+    <button id="nextBtn" aria-label="Next">Next ↓</button>
+    <button id="fsBtn" aria-label="Fullscreen">Fullscreen</button>
+    <button id="helpBtn" aria-label="Help">?</button>
+  </div>
+
+  <div class="help" id="help">
+    <div class="help-card">
+      <h2>Shortcuts</h2>
+      <p><kbd>↓</kbd><kbd>Space</kbd> Next slide</p>
+      <p><kbd>↑</kbd> Previous slide</p>
+      <p><kbd>Home</kbd> First &nbsp;·&nbsp; <kbd>End</kbd> Last</p>
+      <p><kbd>F</kbd> Fullscreen &nbsp;·&nbsp; <kbd>?</kbd> Help</p>
+      <p style="margin-top:14px;color:var(--muted);font-size:12px;">Scroll wheel · trackpad swipe · touch swipe all work.</p>
+    </div>
+  </div>
+
+<script>
+(() => {
+  // Auto cache-buster: each full page load pulls fresh image bytes.
+  // Browser still caches within the session, so navigation/scrolling stays fast.
+  const BUST = Date.now();
+  document.querySelectorAll('img[data-src]').forEach(img => {
+    img.src = img.dataset.src + '?v=' + BUST;
+  });
+
+  const deck = document.getElementById('deck');
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  const cur = document.getElementById('cur');
+  const totalEl = document.getElementById('total');
+  const progress = document.getElementById('progress');
+  const rail = document.getElementById('rail');
+  const help = document.getElementById('help');
+  const cover = document.getElementById('cover');
+  const coverCue = document.getElementById('coverCue');
+  let i = 0;
+
+  totalEl.textContent = total;
+
+  // Build dot rail
+  slides.forEach((s, idx) => {
+    const a = document.createElement('a');
+    a.href = '#' + s.id;
+    a.dataset.idx = idx;
+    a.title = 'Slide ' + (idx + 1);
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      go(idx);
+    });
+    rail.appendChild(a);
+  });
+  const dots = Array.from(rail.children);
+
+  function setActive(idx) {
+    i = idx;
+    cur.textContent = idx + 1;
+    progress.style.height = ((idx + 1) / total * 100) + 'vh';
+    dots.forEach((d, n) => d.classList.toggle('active', n === idx));
+    history.replaceState(null, '', '#s' + (idx + 1));
+  }
+
+  function go(idx) {
+    idx = Math.max(0, Math.min(total - 1, idx));
+    slides[idx].scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // Cover cue → smooth scroll to slide 1
+  coverCue.addEventListener('click', e => {
+    e.preventDefault();
+    go(0);
+  });
+
+  // Track current slide via IntersectionObserver
+  const tracker = new IntersectionObserver((entries) => {
+    let best = null, bestRatio = 0;
+    for (const e of entries) {
+      if (e.intersectionRatio > bestRatio) {
+        bestRatio = e.intersectionRatio;
+        best = e.target;
+      }
+    }
+    if (best && bestRatio > 0.5) {
+      const idx = slides.indexOf(best);
+      if (idx >= 0 && idx !== i) setActive(idx);
+    }
+  }, { root: deck, threshold: [0.25, 0.5, 0.75, 1] });
+  slides.forEach(s => tracker.observe(s));
+
+  // Fade-up reveal as each slide enters viewport
+  const reveal = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) {
+        e.target.classList.add('in');
+        reveal.unobserve(e.target);
+      }
+    }
+  }, { root: deck, rootMargin: '0px 0px -10% 0px', threshold: 0.05 });
+  slides.forEach(s => reveal.observe(s));
+
+  // Hide cover cue once user starts scrolling
+  let cueHidden = false;
+  // Idle bob starts after the entrance animation (1.6s delay + 0.9s duration).
+  setTimeout(() => coverCue.classList.add('in-rest'), 2600);
+  deck.addEventListener('scroll', () => {
+    if (!cueHidden && deck.scrollTop > 40) {
+      coverCue.style.transition = 'opacity .4s ease';
+      coverCue.style.opacity = '0';
+      cueHidden = true;
+    } else if (cueHidden && deck.scrollTop < 20) {
+      coverCue.style.opacity = '';
+      cueHidden = false;
+    }
+  }, { passive: true });
+
+  // Init from hash
+  const m = location.hash.match(/^#s(\d+)$/);
+  if (m) {
+    const n = Math.max(1, Math.min(total, parseInt(m[1], 10))) - 1;
+    requestAnimationFrame(() => slides[n].scrollIntoView({ block: 'start' }));
+    setActive(n);
+  } else {
+    setActive(0);
+  }
+
+  // Keyboard
+  window.addEventListener('keydown', e => {
+    if (help.classList.contains('open')) {
+      if (e.key === 'Escape' || e.key === '?' || e.key === '/') help.classList.remove('open');
+      return;
+    }
+    if (e.key === 'ArrowDown' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); go(i + 1); }
+    else if (e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); go(i - 1); }
+    else if (e.key === 'Home') { e.preventDefault(); cover.scrollIntoView({ behavior: 'smooth' }); }
+    else if (e.key === 'End') { e.preventDefault(); go(total - 1); }
+    else if (e.key.toLowerCase() === 'f') { toggleFs(); }
+    else if (e.key === '?' || e.key === '/') { help.classList.add('open'); }
+  });
+
+  // HUD buttons
+  document.getElementById('prevBtn').addEventListener('click', () => go(i - 1));
+  document.getElementById('nextBtn').addEventListener('click', () => go(i + 1));
+  document.getElementById('fsBtn').addEventListener('click', toggleFs);
+  document.getElementById('helpBtn').addEventListener('click', () => help.classList.toggle('open'));
+  help.addEventListener('click', e => { if (e.target === help) help.classList.remove('open'); });
+
+  function toggleFs() {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  }
+
+  // Show HUD on activity, hide after idle
+  let hudTimer;
+  function showHud() {
+    document.body.classList.add('show-hud');
+    clearTimeout(hudTimer);
+    hudTimer = setTimeout(() => document.body.classList.remove('show-hud'), 1800);
+  }
+  ['mousemove', 'wheel', 'touchstart', 'keydown'].forEach(ev =>
+    window.addEventListener(ev, showHud, { passive: true })
+  );
+  deck.addEventListener('scroll', showHud, { passive: true });
+  showHud();
+})();
+</script>
+</body>
+</html>

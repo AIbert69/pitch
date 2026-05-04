@@ -1,0 +1,6 @@
+.scripts/
+.claude/
+node_modules/
+*.pdf
+.DS_Store
+Thumbs.db
