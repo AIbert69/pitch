@@ -1,0 +1,7 @@
+/* User-supplied finished slides; verified HTML remains beneath the opaque artwork. */
+.reference-art{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:fill;z-index:4;pointer-events:none}
+@media(max-width:700px){
+ .slide.reference-slide{height:auto;min-height:0;aspect-ratio:1600/900;padding:0}
+ .reference-slide>:not(.reference-art){position:absolute!important;top:0!important;left:0!important;width:1px!important;height:1px!important;overflow:hidden!important;clip-path:inset(50%);padding:0!important;margin:0!important}
+}
+
